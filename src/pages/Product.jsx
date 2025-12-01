@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../contexts/ShopContext";
 import { assets } from "../assets/frontend_assets/assets";
 import RelatedProducts from "../components/RelatedProducts";
+import { toast } from "react-toastify"; // Add this import for toast
 
 const Product = () => {
   const { productId } = useParams();
@@ -10,6 +11,7 @@ const Product = () => {
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
+  const [isAdding, setIsAdding] = useState(false); // New state for loading
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -26,10 +28,20 @@ const Product = () => {
   }, [productId, products]);
 
   useEffect(() => {
-  fetchProductData();
-  window.scrollTo(0, 0); 
-}, [productId, products]);
+    fetchProductData();
+    window.scrollTo(0, 0);
+  }, [productId, products]);
 
+  const handleAddToCart = async () => {
+    if (!size) {
+      toast.error("Please select a size!");
+      return;
+    }
+    setIsAdding(true);
+    await addToCart(productData._id, size); // Assuming addToCart is async; if not, remove await
+    setIsAdding(false);
+    toast.success("Added to cart!");
+  };
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
@@ -87,9 +99,13 @@ const Product = () => {
             </div>
           </div>
           <button
-            onClick={() => addToCart(productData._id, size)}
-            className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700"
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700 disabled:bg-gray-500 flex items-center justify-center gap-2"
           >
+            {isAdding && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            )}
             ADD TO CART
           </button>
           <hr className="mt-8 sm:w-4/5" />

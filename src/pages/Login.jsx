@@ -9,10 +9,12 @@ const Login = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // New state for loading
 
   const onSumbitHandler = async (e) => {
     try {
       e.preventDefault();
+      setIsLoading(true); // Start loading
       if (currentState === "Sign Up") {
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
@@ -22,6 +24,8 @@ const Login = () => {
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
+          toast.success("Registration successful!"); // Success toast for signup
+          navigate(-1); // Navigate to home after signup
         } else {
           toast.error(response.data.message);
         }
@@ -32,7 +36,8 @@ const Login = () => {
         });
         if (response.data.success) {
           setToken(response.data.token);
-          localStorage.setItem("token", token);
+          localStorage.setItem("token", response.data.token);
+          toast.success("Login successful!"); // Success toast for login
           navigate("/");
         } else {
           toast.error(response.data.message);
@@ -41,6 +46,8 @@ const Login = () => {
     } catch (error) {
       console.log(error);
       toast.error(error.message);
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
@@ -62,7 +69,7 @@ const Login = () => {
       {currentState === "Sign Up" && (
         <input
           className="w-full px-3 py-2 border border-gray-800"
-          type=" requiredxt"
+          type="text"
           placeholder="Name"
           onChange={(e) => setName(e.target.value)}
           value={name}
@@ -71,7 +78,7 @@ const Login = () => {
       )}
       <input
         className="w-full px-3 py-2 border border-gray-800"
-        type="text"
+        type="email"
         placeholder="Email"
         onChange={(e) => setEmail(e.target.value)}
         value={email}
@@ -79,7 +86,7 @@ const Login = () => {
       />
       <input
         className="w-full px-3 py-2 border border-gray-800"
-        type="Password"
+        type="password"
         placeholder="Password"
         onChange={(e) => setPassword(e.target.value)}
         value={password}
@@ -103,7 +110,14 @@ const Login = () => {
           </p>
         )}
       </div>
-      <button className="bg-black text-white font-light px-8 py-2 mt-4">
+      <button
+        className="bg-black text-white font-light px-8 py-2 mt-4 disabled:bg-gray-500 flex items-center justify-center gap-2"
+        type="submit"
+        disabled={isLoading}
+      >
+        {isLoading && (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        )}
         {currentState}
       </button>
     </form>
